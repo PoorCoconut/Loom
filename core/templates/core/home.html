@@ -1,0 +1,11 @@
+<h1>Welcome to Loom</h1>
+
+{% if user.is_authenticated %}
+    <p>Hello, {{ user.username }}!</p>
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Log Out</button>
+    </form>
+{% else %}
+    <p><a href="{% url 'login' %}">Log In</a></p>
+{% endif %}
