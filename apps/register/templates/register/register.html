@@ -1,7 +1,23 @@
-<h2>Create an Account</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Sign Up</button>
-</form>
-<a href="{% url 'login:login' %}">Back to Login</a>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register · Loom</title>
+    <link rel="stylesheet" href="{% static 'css/shared/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/register/register.css' %}">
+</head>
+<body>
+    <div class="page page--register">
+        <h2>Create an Account</h2>
+        <p class="tagline">Every story starts with a first thread.</p>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Register</button>
+        </form>
+        <hr class="stitch">
+        <a href="{% url 'login:login' %}">Back to Login</a>
+    </div>
+</body>
+</html>

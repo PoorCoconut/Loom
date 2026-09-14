@@ -1,11 +1,29 @@
-<h1>Welcome to Loom</h1>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Loom</title>
+    <link rel="stylesheet" href="{% static 'css/shared/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/home/home.css' %}">
+</head>
+<body>
+    <div class="page page--home">
+        <h1>Welcome to Loom</h1>
 
-{% if user.is_authenticated %}
-    <p>Hello, {{ user.username }}!</p>
-    <form action="{% url 'login:logout' %}" method="post">
-        {% csrf_token %}
-        <button type="submit">Log Out</button>
-    </form>
-{% else %}
-    <p><a href="{% url 'login:login' %}">Log In</a></p>
-{% endif %}
+        {% if user.is_authenticated %}
+            <p>Hello, {{ user.username }}!</p>
+            <nav class="home-nav">
+                <a href="{% url 'profiles:profile' %}">Profile</a>
+                <a href="{% url 'user_settings:settings' %}">Settings</a>
+            </nav>
+            <form action="{% url 'login:logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Log Out</button>
+            </form>
+        {% else %}
+            <p><a href="{% url 'login:login' %}">Log In</a></p>
+        {% endif %}
+    </div>
+</body>
+</html>

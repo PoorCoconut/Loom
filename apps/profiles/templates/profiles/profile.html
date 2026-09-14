@@ -1,11 +1,17 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Profile</title>
+    <meta charset="UTF-8">
+    <title>Profile · Loom</title>
+    <link rel="stylesheet" href="{% static 'css/shared/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/profiles/profiles.css' %}">
 </head>
 <body>
-    <h1>Profile</h1>
-    <p>Logged in as: {{ user.username }}</p>
+    <div class="page page--profile">
+        <h1>Profile</h1>
+        <p>Logged in as: {{ user.username }}</p>
+        <a href="{% url 'home:home' %}">Back to Home</a>
+    </div>
 </body>
 </html>

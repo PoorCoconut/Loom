@@ -1,0 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Work+Sans:wght@400;500;600&display=swap');
+
+:root {
+  --ink: #1b1a2e;
+  --ink-2: #262441;
+  --parchment: #f1e9d8;
+  --thread: #d9a94e;
+  --thread-dim: #8b7355;
+  --ash: #9c97b8;
+  --font-display: 'Cormorant Garamond', serif;
+  --font-ui: 'Work Sans', sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--parchment);
+  font-family: var(--font-ui);
+  line-height: 1.6;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--parchment);
+}
+
+a {
+  color: var(--thread);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s ease;
+}
+a:hover, a:focus-visible {
+  border-bottom-color: var(--thread);
+}
+
+.page {
+  max-width: 480px;
+  margin: 10vh auto;
+  padding: 2.5rem;
+}
+
+.tagline {
+  color: var(--ash);
+  font-style: italic;
+  margin-top: -0.5rem;
+  margin-bottom: 1.75rem;
+}
+
+.field { margin-bottom: 1.25rem; }
+label { display: block; font-size: 0.9rem; color: var(--ash); margin-bottom: 0.4rem; }
+
+input[type="text"], input[type="password"], input[type="email"] {
+  width: 100%;
+  background: var(--ink-2);
+  border: 1px solid var(--thread-dim);
+  border-radius: 3px;
+  padding: 0.65rem 0.8rem;
+  color: var(--parchment);
+  font-family: var(--font-ui);
+  font-size: 1rem;
+}
+input:focus-visible {
+  outline: none;
+  border-color: var(--thread);
+  box-shadow: 0 0 0 3px rgba(217, 169, 78, 0.15);
+}
+
+button {
+  font-family: var(--font-ui);
+  font-weight: 500;
+  background: var(--thread);
+  color: var(--ink);
+  border: none;
+  border-radius: 3px;
+  padding: 0.7rem 1.4rem;
+  cursor: pointer;
+  transition: background 0.25s ease, transform 0.15s ease;
+}
+button:hover { background: #e8bd6c; }
+button:active { transform: scale(0.98); }
+
+.stitch {
+  border: none;
+  border-top: 1px dashed var(--thread-dim);
+  margin: 2rem 0;
+}
