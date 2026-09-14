@@ -1,0 +1,24 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Settings</title>
+</head>
+<body>
+    <h1>Settings</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label>
+            <input type="checkbox" name="dark_mode" {% if settings.dark_mode %}checked{% endif %}>
+            Dark mode
+        </label>
+        <br>
+        <label>
+            <input type="checkbox" name="email_notifications" {% if settings.email_notifications %}checked{% endif %}>
+            Email notifications
+        </label>
+        <br>
+        <button type="submit">Save</button>
+    </form>
+</body>
+</html>

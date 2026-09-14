@@ -38,8 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'accounts',
-    'core',
+    'apps.login',
+    'apps.register',
+    'apps.home',
+    'apps.profiles',
+    'apps.user_settings',
 ]
 
 MIDDLEWARE = [
@@ -118,6 +121,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
 
 # Email
