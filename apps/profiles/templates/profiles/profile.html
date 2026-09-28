@@ -10,7 +10,13 @@
 <body>
     <div class="page page--profile">
         <h1>Profile</h1>
-        <p>Logged in as: {{ user.username }}</p>
+        <p>Logged in as: {{ user.username }} ({{ user.email|default:"no email set" }})</p>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Save</button>
+        </form>
+        <hr class="stitch">
         <a href="{% url 'home:home' %}">Back to Home</a>
     </div>
 </body>

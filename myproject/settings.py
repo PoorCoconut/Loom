@@ -43,6 +43,10 @@ INSTALLED_APPS = [
     'apps.home',
     'apps.profiles',
     'apps.user_settings',
+    'apps.stories',
+    'apps.editor',
+    'apps.engagement',
+    'apps.reading',
 ]
 
 MIDDLEWARE = [
@@ -79,21 +83,33 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
 import os
-from pathlib import Path
-from dotenv import load_dotenv
 import dj_database_url
+from dotenv import load_dotenv
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-
+# Looks in Loom/.env first, then Loom/myproject/.env (where yours currently lives).
 load_dotenv(BASE_DIR / ".env")
+load_dotenv(BASE_DIR / "myproject" / ".env")
 
-DATABASES = {
-    "default": dj_database_url.parse(
-        os.environ["DATABASE_URL"],
-        conn_max_age=600,
-        ssl_require=True,
-    )
-}
+# DATABASE_URL set  -> Supabase PostgreSQL. Not set -> local SQLite.
+import sys
+
+if os.environ.get('DATABASE_URL') and 'test' not in sys.argv:
+    DATABASES = {
+        'default': dj_database_url.parse(
+            os.environ['DATABASE_URL'],
+            conn_max_age=600,
+            ssl_require=True,              # Supabase requires SSL
+        )
+    }
+    # Needed if you use Supabase's transaction pooler (port 6543); harmless otherwise.
+    DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
