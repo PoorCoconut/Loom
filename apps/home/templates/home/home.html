@@ -6,35 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% if view == 'weave' %}Weave{% else %}Home{% endif %} · Loom</title>
     <link rel="stylesheet" href="{% static 'css/shared/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/shared/nav.css' %}">
     <link rel="stylesheet" href="{% static 'css/home/home.css' %}">
 </head>
 <body class="home-body">
 <div class="home">
 
-    <header class="nav">
-        <a class="nav__brand" href="{% url 'home:home' %}"><span class="nav__spark">&#10022;</span> Loom</a>
-
-        <nav class="nav__tabs" aria-label="Main">
-            <a href="{% url 'home:home' %}" class="nav__tab{% if view == 'home' %} is-active{% endif %}">Home</a>
-            <a href="?view=weave{% if selected %}&story={{ selected.pk }}{% endif %}" class="nav__tab nav__tab--weave{% if view == 'weave' %} is-active{% endif %}">&#10070; Weave</a>
-        </nav>
-
-        {% if view == 'weave' and stories %}
-        <label class="nav__picker">
-            <span>Story</span>
-            <select onchange="location.href='?view=weave&story='+this.value">
-                {% for s in stories %}<option value="{{ s.pk }}"{% if selected and s.pk == selected.pk %} selected{% endif %}>{{ s.title }}</option>{% endfor %}
-            </select>
-        </label>
-        {% endif %}
-
-        <div class="nav__right">
-            <span class="nav__user">{{ user.username }}</span>
-            <a href="{% url 'profiles:profile' %}">Profile</a>
-            <a href="{% url 'user_settings:settings' %}">Settings</a>
-            <form action="{% url 'login:logout' %}" method="post">{% csrf_token %}<button type="submit" class="link-btn">Log out</button></form>
-        </div>
-    </header>
+    {% include 'home/_nav.html' %}
 
     <main class="workspace">
     {% if view == 'weave' %}

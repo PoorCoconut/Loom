@@ -3,21 +3,59 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Profile · Loom</title>
     <link rel="stylesheet" href="{% static 'css/shared/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/shared/nav.css' %}">
     <link rel="stylesheet" href="{% static 'css/profiles/profiles.css' %}">
 </head>
-<body>
-    <div class="page page--profile">
-        <h1>Profile</h1>
-        <p>Logged in as: {{ user.username }} ({{ user.email|default:"no email set" }})</p>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Save</button>
-        </form>
-        <hr class="stitch">
-        <a href="{% url 'home:home' %}">Back to Home</a>
-    </div>
+<body class="app-body">
+<div class="app-shell">
+    {% include 'home/_nav.html' %}
+
+    <main class="profile">
+        <div class="profile__wrap">
+
+            <section class="hero">
+                <div class="hero__avatar">
+                    {% if profile.avatar_url %}<img src="{{ profile.avatar_url }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
+                </div>
+                <div class="hero__text">
+                    <span class="hero__eyebrow">Author</span>
+                    <h1>{{ profile.full_name|default:user.username }}</h1>
+                    <p class="hero__meta">@{{ user.username }}{% if user.email %} &middot; {{ user.email }}{% endif %} &middot; weaving since {{ profile.created_at|date:"F Y" }}</p>
+                    <p class="hero__bio">{{ profile.bio|default:"No bio yet — tell readers who is behind the threads." }}</p>
+                </div>
+            </section>
+
+            <div class="stats">
+                <div class="stat-card"><b>{{ stats.stories }}</b><span>Stories</span></div>
+                <div class="stat-card"><b>{{ stats.published }}</b><span>Published</span></div>
+                <div class="stat-card"><b>{{ stats.scenes }}</b><span>Scenes written</span></div>
+            </div>
+
+            <section class="card">
+                <h2>Edit profile</h2>
+                {% for message in messages %}<div class="notice">{{ message }}</div>{% endfor %}
+                <form method="post" class="profile-form">
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}<div class="errors">{{ form.non_field_errors }}</div>{% endif %}
+                    {% for field in form %}
+                        <div class="pfield">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                            {% if field.errors %}<div class="errors">{{ field.errors }}</div>{% endif %}
+                        </div>
+                    {% endfor %}
+                    <div class="profile-form__actions">
+                        <button type="submit">Save changes</button>
+                        <a href="{% url 'home:home' %}">Back to home</a>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </main>
+</div>
 </body>
 </html>

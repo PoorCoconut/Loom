@@ -4,6 +4,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from apps.profiles.models import Profile
 from apps.stories.models import Story
 
 
@@ -22,6 +23,7 @@ def home_view(request):
     view = "weave" if request.GET.get("view") == "weave" else "home"
     return render(request, "home/home.html", {
         "view": view,
+        "nav_avatar": getattr(Profile.objects.filter(user=request.user).first(), "avatar_url", None),
         "stories": stories,
         "selected": selected,
         "weave_src": reverse("editor:weave", args=[selected.pk]) + "?embed=1" if selected else None,
