@@ -20,6 +20,8 @@ from django.views.decorators.http import require_http_methods
 
 from apps.stories.models import Story, StoryCollaborator
 
+from apps.user_settings.models import UserSettings
+
 from .logic import coerce
 from .models import GlobalVariable, Node, Path, PathCondition
 
@@ -93,12 +95,13 @@ def _graph(story):
 @xframe_options_sameorigin
 def weave_view(request, story_id):
     story, can_edit = _access(request, story_id)
+    prefs, _ = UserSettings.objects.get_or_create(user=request.user)
     api_base = reverse("editor:api_nodes", args=[story.pk]).rsplit("/nodes/", 1)[0]
     return render(request, "editor/weave.html", {
         "story": story,
         "embed": request.GET.get("embed") == "1",
         "weave": {**_graph(story), "canEdit": can_edit, "apiBase": api_base,
-                  "me": request.user.get_username()},
+                  "me": request.user.get_username(), "prefs": prefs.weave_prefs()},
     })
 
 

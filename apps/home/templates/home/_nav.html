@@ -20,7 +20,7 @@
             <span class="nav__avatar">{% if nav_avatar %}<img src="{{ nav_avatar }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}</span>
             {{ user.username }}
         </a>
-        <a href="{% url 'user_settings:settings' %}">Settings</a>
+        <a href="{% url 'user_settings:settings' %}" class="nav__link{% if view == 'settings' %} is-active{% endif %}">Settings</a>
         <form action="{% url 'login:logout' %}" method="post">{% csrf_token %}<button type="submit" class="link-btn">Log out</button></form>
     </div>
 </header>

@@ -3,31 +3,96 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Settings · Loom</title>
     <link rel="stylesheet" href="{% static 'css/shared/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/shared/nav.css' %}">
     <link rel="stylesheet" href="{% static 'css/settings/settings.css' %}">
 </head>
-<body>
-    <div class="page page--settings">
-        <h1>Settings</h1>
-        <form method="post">
-            {% csrf_token %}
-            <div class="field field--checkbox">
-                <label>
-                    <input type="checkbox" name="dark_mode" {% if settings.dark_mode %}checked{% endif %}>
-                    Dark mode
-                </label>
-            </div>
-            <div class="field field--checkbox">
-                <label>
-                    <input type="checkbox" name="email_notifications" {% if settings.email_notifications %}checked{% endif %}>
-                    Email notifications
-                </label>
-            </div>
-            <button type="submit">Save</button>
-        </form>
-        <hr class="stitch">
-        <a href="{% url 'home:home' %}">Back to Home</a>
-    </div>
+<body class="app-body">
+<div class="app-shell">
+    {% include 'home/_nav.html' %}
+
+    <main class="settings">
+        <div class="settings__wrap">
+            <header class="settings__head">
+                <h1>Settings</h1>
+                <p class="tagline">Make Loom feel like your own reading nook.</p>
+            </header>
+
+            {% for message in messages %}<div class="notice{% if message.tags == 'error' %} notice--error{% endif %}">{{ message }}</div>{% endfor %}
+
+            <form method="post" id="prefs">
+                {% csrf_token %}
+
+                <section class="card">
+                    <h2>Reading</h2>
+                    <p class="card__sub">How stories look when you (or your readers) read them in Weave.</p>
+
+                    <div class="group"><div class="group__label">Typeface</div>
+                        <div class="pills">{% for r in form.reader_font %}<label for="{{ r.id_for_label }}">{{ r.tag }}<span>{{ r.choice_label }}</span></label>{% endfor %}</div></div>
+                    <div class="group"><div class="group__label">Text size</div>
+                        <div class="pills">{% for r in form.reader_font_size %}<label for="{{ r.id_for_label }}">{{ r.tag }}<span>{{ r.choice_label }}</span></label>{% endfor %}</div></div>
+
+                    <div class="preview" id="preview">
+                        <span class="preview__tag">Preview</span>
+                        <p>The lantern above the village well has gone dark. The mayor presses a tin of tea into your hands and asks you, very politely, to find out why.</p>
+                    </div>
+
+                    <label class="switch-row" for="{{ form.reveal_map.id_for_label }}">
+                        <span><b>Reveal the full map while reading my stories</b><small>Off keeps the fog of war, so you read your own story like a reader would.</small></span>
+                        <span class="switch">{{ form.reveal_map }}<i></i></span>
+                    </label>
+                </section>
+
+                <section class="card">
+                    <h2>Writing</h2>
+                    <p class="card__sub">Your workspace in the Weave editor.</p>
+                    <div class="group"><div class="group__label">Writing text size</div>
+                        <div class="pills">{% for r in form.editor_font_size %}<label for="{{ r.id_for_label }}">{{ r.tag }}<span>{{ r.choice_label }}</span></label>{% endfor %}</div></div>
+                    <div class="group"><div class="group__label">Open Weave in</div>
+                        <div class="pills">{% for r in form.default_mode %}<label for="{{ r.id_for_label }}">{{ r.tag }}<span>{{ r.choice_label }}</span></label>{% endfor %}</div></div>
+                </section>
+
+                <section class="card">
+                    <h2>Comfort &amp; notifications</h2>
+                    <label class="switch-row" for="{{ form.reduce_motion.id_for_label }}">
+                        <span><b>Reduce motion</b><small>Calms the glowing threads, gliding camera and fade-ins in Weave.</small></span>
+                        <span class="switch">{{ form.reduce_motion }}<i></i></span>
+                    </label>
+                    <label class="switch-row" for="{{ form.email_notifications.id_for_label }}">
+                        <span><b>Email notifications</b><small>Hear about reviews and collaborators by email.</small></span>
+                        <span class="switch">{{ form.email_notifications }}<i></i></span>
+                    </label>
+                </section>
+
+                <div class="savebar">
+                    <span>Changes apply the next time you open Weave.</span>
+                    <button type="submit">Save settings</button>
+                </div>
+            </form>
+
+            <section class="card card--danger">
+                <h2>Deactivate account</h2>
+                <p class="card__sub">This signs you out and blocks logging in. Your stories are kept, and an admin can restore the account.</p>
+                <form method="post" class="danger-form" onsubmit="return confirm('Deactivate your account?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="deactivate">
+                    <input type="text" name="confirm" placeholder="Type “{{ user.username }}” to confirm" autocomplete="off" required>
+                    <button type="submit" class="btn-danger">Deactivate</button>
+                </form>
+            </section>
+        </div>
+    </main>
+</div>
+<script>
+(() => {
+  const sizes = {{ sizes|safe }}, fonts = {{ fonts|safe }};
+  const p = document.querySelector('#preview p');
+  const val = n => (document.querySelector(`input[name="${n}"]:checked`) || {}).value;
+  const draw = () => { p.style.fontSize = sizes[val('reader_font_size')] || ''; p.style.fontFamily = fonts[val('reader_font')] || ''; };
+  document.getElementById('prefs').addEventListener('change', draw); draw();
+})();
+</script>
 </body>
 </html>

@@ -19,7 +19,7 @@
     mode: boot.canEdit ? 'edit' : 'read',
     selNode: null, selPath: null,
     view: { x: 60, y: 60, k: 1 },
-    wide: false, branchKind: 'new', showMap: false,
+    wide: false, branchKind: 'new', showMap: !!(boot.prefs && boot.prefs.revealMap),
     read: null,
   };
 
@@ -661,10 +661,16 @@
   window.addEventListener('resize', () => applyView());
 
   /* ------------------------------------------------------------------ go */
+  const prefs = boot.prefs || {};
+  root.style.setProperty('--reader-size', prefs.readerSize || '1.32rem');
+  root.style.setProperty('--reader-font', prefs.readerFont || 'var(--font-display)');
+  root.style.setProperty('--editor-size', prefs.editorSize || '1.25rem');
+  root.classList.toggle('reduce-motion', !!prefs.reduceMotion);
   if (!S.canEdit) { root.classList.replace('mode-edit', 'mode-read'); }
   const allAtOrigin = [...S.nodes.values()].every(n => n.x === 0 && n.y === 0);
   if (S.nodes.size > 1 && allAtOrigin) { autoLayout(); if (S.canEdit) savePositions([...S.nodes.keys()]); }
   if (S.mode === 'read') startRead();
   renderGraph(); renderPanel();
   requestAnimationFrame(() => (S.mode === 'read' && S.read ? (fitView(false), setTimeout(() => focusNode(S.read.current), 150)) : fitView(false)));
+  if (S.canEdit && prefs.defaultMode === 'read') setMode('read');
 })();

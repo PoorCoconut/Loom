@@ -35,3 +35,5 @@
   .nav { gap: .7rem; padding: 0 .8rem; overflow-x: auto; }
   .nav__user, .nav__picker span { display: none; }
 }
+
+.nav__link.is-active { color: var(--parchment); border-bottom-color: var(--thread); }
