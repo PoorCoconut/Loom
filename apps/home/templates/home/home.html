@@ -3,27 +3,72 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Loom</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if view == 'weave' %}Weave{% else %}Home{% endif %} · Loom</title>
     <link rel="stylesheet" href="{% static 'css/shared/base.css' %}">
     <link rel="stylesheet" href="{% static 'css/home/home.css' %}">
 </head>
-<body>
-    <div class="page page--home">
-        <h1>Welcome to Loom</h1>
+<body class="home-body">
+<div class="home">
 
-        {% if user.is_authenticated %}
-            <p>Hello, {{ user.username }}!</p>
-            <nav class="home-nav">
-                <a href="{% url 'profiles:profile' %}">Profile</a>
-                <a href="{% url 'user_settings:settings' %}">Settings</a>
-            </nav>
-            <form action="{% url 'login:logout' %}" method="post">
-                {% csrf_token %}
-                <button type="submit">Log Out</button>
-            </form>
-        {% else %}
-            <p><a href="{% url 'login:login' %}">Log In</a></p>
+    <header class="nav">
+        <a class="nav__brand" href="{% url 'home:home' %}"><span class="nav__spark">&#10022;</span> Loom</a>
+
+        <nav class="nav__tabs" aria-label="Main">
+            <a href="{% url 'home:home' %}" class="nav__tab{% if view == 'home' %} is-active{% endif %}">Home</a>
+            <a href="?view=weave{% if selected %}&story={{ selected.pk }}{% endif %}" class="nav__tab nav__tab--weave{% if view == 'weave' %} is-active{% endif %}">&#10070; Weave</a>
+        </nav>
+
+        {% if view == 'weave' and stories %}
+        <label class="nav__picker">
+            <span>Story</span>
+            <select onchange="location.href='?view=weave&story='+this.value">
+                {% for s in stories %}<option value="{{ s.pk }}"{% if selected and s.pk == selected.pk %} selected{% endif %}>{{ s.title }}</option>{% endfor %}
+            </select>
+        </label>
         {% endif %}
-    </div>
+
+        <div class="nav__right">
+            <span class="nav__user">{{ user.username }}</span>
+            <a href="{% url 'profiles:profile' %}">Profile</a>
+            <a href="{% url 'user_settings:settings' %}">Settings</a>
+            <form action="{% url 'login:logout' %}" method="post">{% csrf_token %}<button type="submit" class="link-btn">Log out</button></form>
+        </div>
+    </header>
+
+    <main class="workspace">
+    {% if view == 'weave' %}
+        {% if weave_src %}
+            <iframe class="workspace__weave" src="{{ weave_src }}" title="Weave: {{ selected.title }}"></iframe>
+        {% else %}
+            <div class="workspace__empty">
+                <div class="workspace__spark">&#10022;</div>
+                <h2>Nothing to weave yet</h2>
+                <p>Name your first story and its blank canvas will open here.</p>
+                {% include 'home/_new_story_form.html' %}
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="library">
+            <h1>Welcome back, {{ user.username }}</h1>
+            <p class="tagline">Pick a story to keep weaving, or start a new thread.</p>
+            <div class="library__grid">
+                {% for s in stories %}
+                <a class="book" href="?view=weave&story={{ s.pk }}">
+                    <span class="book__status">{% if s.author_id != user.id %}shared &middot; {% endif %}{% if s.is_published %}published{% else %}draft{% endif %}</span>
+                    <span class="book__title">{{ s.title }}</span>
+                    <span class="book__syn">{{ s.synopsis|default:"No synopsis yet."|truncatechars:90 }}</span>
+                    <span class="book__go">Open in Weave &rarr;</span>
+                </a>
+                {% endfor %}
+                <div class="book book--new">
+                    <span class="book__title">A new story</span>
+                    {% include 'home/_new_story_form.html' %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    </main>
+</div>
 </body>
 </html>

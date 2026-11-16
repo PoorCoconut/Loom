@@ -1,0 +1,5 @@
+<form class="new-story" action="{% url 'home:create_story' %}" method="post">
+    {% csrf_token %}
+    <input type="text" name="title" placeholder="Title of your story" maxlength="150" required>
+    <button type="submit">+ Create &amp; weave</button>
+</form>

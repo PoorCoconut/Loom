@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{{ story.title }} · Weave · Loom</title>
+    <link rel="stylesheet" href="{% static 'css/shared/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/editor/weave.css' %}">
+</head>
+<body class="weave-body">
+<div id="weave" class="weave mode-edit{% if embed %} is-embedded{% endif %}">
+
+    <header class="topbar">
+        <a class="topbar__back" href="{% url 'home:home' %}" title="Back to Loom">&#8592;</a>
+        <div class="topbar__title">
+            <span class="topbar__eyebrow" id="status-eyebrow">Weaving</span>
+            <h1>{{ story.title }}</h1>
+        </div>
+        <div class="topbar__stats" id="stats"></div>
+        <div class="mode-switch" id="mode-switch" role="tablist" aria-label="View mode">
+            <button role="tab" data-mode="edit" class="is-active"><span aria-hidden="true">&#9998;</span> Edit</button>
+            <button role="tab" data-mode="read"><span aria-hidden="true">&#10070;</span> Read</button>
+            <i class="mode-switch__glow"></i>
+        </div>
+    </header>
+
+    <main class="stage" id="stage">
+        <div class="stage__bg"></div>
+        <div class="world" id="world">
+            <svg class="threads" id="threads" width="1" height="1">
+                <defs>
+                    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                        <path d="M0 1 L9 5 L0 9 Z" fill="#9b83e8" fill-opacity=".8"/>
+                    </marker>
+                    <marker id="arrow-gold" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                        <path d="M0 1 L9 5 L0 9 Z" fill="#d9a94e"/>
+                    </marker>
+                </defs>
+                <g id="threads-g"></g>
+                <path id="ghost-thread" class="thread thread--ghost" d=""/>
+            </svg>
+            <div id="nodes"></div>
+            <div id="labels"></div>
+        </div>
+
+        <div class="empty-state" id="empty-state" hidden>
+            <div class="empty-state__card">
+                <div class="empty-state__spark">&#10022;</div>
+                <h2>A blank loom</h2>
+                <p>Every story starts with a single thread. Write your opening scene &mdash; you can branch out from there.</p>
+                <button class="btn btn--gold" id="empty-create">Begin the story</button>
+            </div>
+        </div>
+
+        <div class="dock dock--zoom" aria-label="Zoom">
+            <button id="zoom-in" title="Zoom in">+</button>
+            <button id="zoom-out" title="Zoom out">&minus;</button>
+            <button id="zoom-fit" title="Fit whole story">&#9635;</button>
+        </div>
+        <div class="dock dock--tools" id="dock-tools">
+            <button id="tool-add" class="dock__wide" title="Add a loose scene to the canvas">+ Scene</button>
+            <button id="tool-tidy" class="dock__wide" title="Re-arrange the tree neatly">&#10023; Tidy up</button>
+        </div>
+        <div class="legend" aria-hidden="true">
+            <span><i class="dot dot--start"></i>Opening</span>
+            <span><i class="dot dot--branch"></i>Branches</span>
+            <span><i class="dot dot--end"></i>Ending</span>
+        </div>
+        <div class="toast" id="toast" role="status"></div>
+    </main>
+
+    <aside class="panel" id="panel" aria-live="polite"></aside>
+</div>
+
+{{ weave|json_script:"weave-data" }}
+<script src="{% static 'js/editor/weave.js' %}"></script>
+</body>
+</html>
