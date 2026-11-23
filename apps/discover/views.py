@@ -1,8 +1,10 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
+from apps.core.guests import is_guest
 from apps.engagement.models import StoryFavourite, StoryLike
 from apps.stories.models import Story
 
@@ -33,6 +35,9 @@ def discover_view(request):
 
 @login_required
 def collections_view(request):
+    if is_guest(request.user):
+        messages.info(request, "Collections are for members. Create an account to save and star stories.")
+        return redirect("discover:discover")
     q, tags, sort = _search_params(request)
     tab = "starred" if request.GET.get("tab") == "starred" else "saved"
     rel = {"saved": "favourites", "starred": "likes"}
@@ -55,6 +60,8 @@ def collections_view(request):
 @require_POST
 def toggle_view(request, kind, story_id):
     """Star / unstar (StoryLike) or save / unsave (StoryFavourite) a story."""
+    if is_guest(request.user):
+        return JsonResponse({"error": "Create an account to star and save stories."}, status=403)
     model = {"star": StoryLike, "save": StoryFavourite}.get(kind)
     if not model:
         raise Http404

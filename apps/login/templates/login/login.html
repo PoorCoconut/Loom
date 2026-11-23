@@ -3,21 +3,51 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Log In · Loom</title>
     <link rel="stylesheet" href="{% static 'css/shared/base.css' %}">
-    <link rel="stylesheet" href="{% static 'css/login/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/shared/auth.css' %}">
 </head>
-<body>
-    <div class="page page--login">
-        <h2>Log In</h2>
-        <p class="tagline">Pick up the thread where you left it.</p>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Log In</button>
-        </form>
-        <hr class="stitch">
-        <a href="{% url 'register:register' %}">Need an account? Register</a>
+<body class="auth-body">
+<canvas id="loom-field" aria-hidden="true"></canvas>
+<main class="auth">
+    <div class="auth__col">
+        <div class="brand">
+            {% include 'home/_logo.html' %}
+            <h1 class="brand__word">Loom</h1>
+        </div>
+        <p class="brand__sub">Weave stories that branch.</p>
+
+        <section class="auth-card">
+            <h2>Welcome back</h2>
+            <p class="tagline">Pick up the thread where you left it.</p>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors %}<div class="auth-notice">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+                <div class="afield">
+                    <label for="{{ form.username.id_for_label }}">Username</label>
+                    {{ form.username }}{{ form.username.errors }}
+                </div>
+                <div class="afield">
+                    <label for="{{ form.password.id_for_label }}">Password</label>
+                    {{ form.password }}{{ form.password.errors }}
+                </div>
+                <button type="submit" class="btn-main">Log in</button>
+            </form>
+
+            <div class="or">or</div>
+
+            <form method="post" action="{% url 'login:guest' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-guest">Continue as guest</button>
+            </form>
+            <p class="guest-note">Guests can browse Discover and read published stories. Weaving, starring and saving need an account.</p>
+
+            <p class="auth-foot"><a href="{% url 'register:register' %}">Need an account? Register</a></p>
+        </section>
     </div>
+</main>
+<script src="{% static 'js/login/loom-field.js' %}"></script>
 </body>
 </html>

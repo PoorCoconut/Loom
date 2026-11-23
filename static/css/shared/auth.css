@@ -1,0 +1,61 @@
+/* Login + Register: the Loom entrance */
+.auth-body { min-height: 100vh; overflow-x: hidden; position: relative;
+  background: radial-gradient(ellipse at 50% 18%, #2d2360 0%, #1b1740 38%, #120f26 100%) fixed; }
+#loom-field { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+.auth-body::after { /* calm vignette so the card stays the focus */
+  content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(18,15,38,.55) 0%, rgba(18,15,38,0) 55%); }
+
+.auth { position: relative; z-index: 1; min-height: 100vh; display: grid; place-items: center; padding: 2rem 1rem; }
+.auth__col { width: 100%; max-width: 430px; display: grid; gap: 1.4rem; justify-items: center; }
+
+/* brand lockup */
+.brand { display: flex; align-items: center; gap: .9rem; animation: float 7s ease-in-out infinite; }
+.brand .loom-logo { width: 84px; height: 84px; filter: drop-shadow(0 0 18px rgba(217,169,78,.35)); overflow: visible; }
+.brand__word { font-family: var(--font-display); font-size: 4.2rem; font-weight: 600; line-height: .9; letter-spacing: .02em; margin: 0;
+  background: linear-gradient(100deg, #f0cf86 10%, #fff3d4 40%, #b9a6f5 75%, #f0cf86 100%); background-size: 220% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 9s linear infinite; }
+.brand__sub { margin: 0; text-align: center; color: var(--ash); font-style: italic; letter-spacing: .04em; }
+@keyframes shimmer { to { background-position: -220% 0; } }
+@keyframes float { 50% { transform: translateY(-5px); } }
+
+.loom-logo__threads path { stroke-dasharray: 60; stroke-dashoffset: 60; animation: draw 1.4s .15s cubic-bezier(.2,.8,.2,1) forwards; }
+.loom-logo__threads path:nth-child(3), .loom-logo__threads path:nth-child(4) { animation-delay: .75s; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+.loom-logo .n { transform-box: fill-box; transform-origin: center; opacity: 0; animation: pop .6s cubic-bezier(.3,1.6,.5,1) forwards; }
+.loom-logo .n--root { animation-delay: .05s, 0s; }
+.loom-logo .n:nth-child(2) { animation-delay: .6s; } .loom-logo .n:nth-child(3) { animation-delay: .7s; }
+.loom-logo .n:nth-child(4) { animation-delay: 1.15s; } .loom-logo .n:nth-child(5) { animation-delay: 1.25s; }
+@keyframes pop { from { opacity: 0; transform: scale(.2); } to { opacity: 1; transform: scale(1); } }
+.loom-logo .n--root { animation: pop .6s .05s cubic-bezier(.3,1.6,.5,1) forwards, glow 3.6s 1s ease-in-out infinite; }
+@keyframes glow { 50% { filter: drop-shadow(0 0 7px #d9a94e); } }
+
+/* card */
+.auth-card { position: relative; width: 100%; padding: 2rem 2rem 1.6rem; border-radius: 24px;
+  background: rgba(33, 28, 70, .72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(185,166,245,.25); box-shadow: 0 24px 60px rgba(6,4,20,.55); animation: rise .8s .2s both cubic-bezier(.2,.8,.2,1); }
+.auth-card::before { content: ""; position: absolute; inset: 7px; border-radius: 18px; border: 1px dashed rgba(217,169,78,.22); pointer-events: none; }
+@keyframes rise { from { opacity: 0; transform: translateY(18px); } }
+.auth-card h2 { margin: 0 0 .15rem; font-size: 1.9rem; }
+.auth-card .tagline { margin: 0 0 1.3rem; }
+.auth-card .afield { margin-bottom: 1rem; }
+.auth-card label { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ash); }
+.auth-card input[type="text"], .auth-card input[type="password"], .auth-card input[type="email"] {
+  width: 100%; background: rgba(18,15,38,.7); border: 1px solid rgba(185,166,245,.28); border-radius: 12px; padding: .7rem .9rem; color: var(--parchment); font-size: 1rem; }
+.auth-card input:focus-visible { outline: none; border-color: var(--thread); box-shadow: 0 0 0 3px rgba(217,169,78,.16), 0 0 22px rgba(217,169,78,.12); }
+.auth-card .helptext, .auth-card .afield small, .auth-card ul.helptext { color: var(--ash); font-size: .74rem; display: block; margin-top: .3rem; }
+.auth-card ul { margin: .4rem 0 0; padding-left: 1.1rem; }
+.auth-card .errorlist { list-style: none; padding: 0; margin: .4rem 0 0; color: #ffb4c8; font-size: .82rem; }
+.btn-main { width: 100%; padding: .8rem; border-radius: 12px; font-size: 1rem; box-shadow: 0 0 24px rgba(217,169,78,.25); }
+.btn-main:hover { box-shadow: 0 0 34px rgba(217,169,78,.4); }
+.or { display: flex; align-items: center; gap: .8rem; color: var(--ash); font-size: .75rem; letter-spacing: .16em; text-transform: uppercase; margin: 1.2rem 0; }
+.or::before, .or::after { content: ""; flex: 1; border-top: 1px dashed rgba(217,169,78,.3); }
+.btn-guest { width: 100%; padding: .75rem; border-radius: 12px; background: transparent; color: #cdbff6; border: 1px solid rgba(185,166,245,.4); }
+.btn-guest:hover { background: rgba(185,166,245,.14); color: var(--parchment); border-color: #b9a6f5; }
+.guest-note { margin: .6rem 0 0; text-align: center; color: var(--ash); font-size: .78rem; line-height: 1.5; }
+.auth-foot { margin-top: 1.2rem; text-align: center; font-size: .9rem; }
+.auth-notice { margin-bottom: 1rem; padding: .6rem .9rem; border-radius: 12px; background: rgba(224,138,168,.12); border: 1px solid rgba(224,138,168,.4); color: #ffb4c8; font-size: .85rem; }
+
+@media (max-width: 480px) { .brand__word { font-size: 3.4rem; } .brand .loom-logo { width: 68px; height: 68px; } .auth-card { padding: 1.6rem 1.3rem 1.3rem; } }
+@media (prefers-reduced-motion: reduce) { .brand, .brand__word, .loom-logo .n--root { animation: none !important; }
+  .loom-logo__threads path { animation: none; stroke-dashoffset: 0; } .loom-logo .n { animation: none; opacity: 1; } .auth-card { animation: none; } }

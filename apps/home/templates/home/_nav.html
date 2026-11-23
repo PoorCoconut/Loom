@@ -1,12 +1,18 @@
 <header class="nav">
-    <a class="nav__brand" href="{% url 'home:home' %}"><span class="nav__spark">&#10022;</span> Loom</a>
+    <a class="nav__brand" href="{% url 'home:home' %}">{% include 'home/_logo.html' %} Loom</a>
 
+{% if is_guest %}
+    <nav class="nav__tabs" aria-label="Main">
+        <a href="{% url 'discover:discover' %}" class="nav__tab{% if view == 'discover' %} is-active{% endif %}">&#9678; Discover</a>
+    </nav>
+    {% else %}
     <nav class="nav__tabs" aria-label="Main">
         <a href="{% url 'home:home' %}" class="nav__tab{% if view == 'home' %} is-active{% endif %}">Home</a>
         <a href="{% url 'home:home' %}?view=weave{% if selected %}&story={{ selected.pk }}{% endif %}" class="nav__tab nav__tab--weave{% if view == 'weave' %} is-active{% endif %}">&#10070; Weave</a>
         <a href="{% url 'discover:discover' %}" class="nav__tab{% if view == 'discover' %} is-active{% endif %}">&#9678; Discover</a>
         <a href="{% url 'discover:collections' %}" class="nav__tab{% if view == 'collections' %} is-active{% endif %}">&#9733; Collections</a>
     </nav>
+    {% endif %}
 
     {% if view == 'weave' and selected %}
     <label class="nav__picker">
@@ -17,6 +23,13 @@
     </label>
     {% endif %}
 
+{% if is_guest %}
+    <div class="nav__right">
+        <span class="nav__guest">Guest &middot; read-only</span>
+        <a href="{% url 'register:register' %}" class="nav__cta">Create account</a>
+        <form action="{% url 'login:logout' %}" method="post">{% csrf_token %}<button type="submit" class="link-btn">Leave</button></form>
+    </div>
+    {% else %}
     <div class="nav__right">
         <a href="{% url 'profiles:profile' %}" class="nav__me{% if view == 'profile' %} is-active{% endif %}">
             <span class="nav__avatar">{% if nav_avatar %}<img src="{{ nav_avatar }}" alt="">{% else %}{{ user.username|slice:":1"|upper }}{% endif %}</span>
@@ -25,4 +38,5 @@
         <a href="{% url 'user_settings:settings' %}" class="nav__link{% if view == 'settings' %} is-active{% endif %}">Settings</a>
         <form action="{% url 'login:logout' %}" method="post">{% csrf_token %}<button type="submit" class="link-btn">Log out</button></form>
     </div>
+    {% endif %}
 </header>

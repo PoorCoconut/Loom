@@ -9,3 +9,5 @@
 .tabs-pill a small { opacity: .7; margin-left: .25rem; }
 .tabs-pill a:hover { color: var(--parchment); border-bottom-width: 0; }
 .tabs-pill a.is-active { background: var(--thread); color: var(--ink); box-shadow: 0 0 18px rgba(217,169,78,.3); }
+
+.flash { max-width: 760px; margin-bottom: 1rem; padding: .7rem 1rem; border-radius: 14px; background: rgba(217,169,78,.1); border: 1px solid rgba(217,169,78,.35); color: var(--parchment); font-size: .9rem; }

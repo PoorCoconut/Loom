@@ -3,6 +3,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
+from apps.core.guests import is_guest
 from apps.profiles.models import Profile
 
 from .forms import UserSettingsForm
@@ -11,6 +12,9 @@ from .models import UserSettings
 
 @login_required
 def settings_view(request):
+    if is_guest(request.user):
+        messages.info(request, "Guests don't have a profile. Create an account to get one.")
+        return redirect('discover:discover')
     settings_obj, _ = UserSettings.objects.get_or_create(user=request.user)
     profile = Profile.all_objects.filter(user=request.user).first()
 

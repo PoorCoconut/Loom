@@ -37,3 +37,10 @@
 }
 
 .nav__link.is-active { color: var(--parchment); border-bottom-color: var(--thread); }
+
+.nav__brand .loom-logo { width: 34px; height: 34px; }
+.nav__brand .loom-logo__threads path { animation-duration: .01s; stroke-dashoffset: 0; animation: none; stroke-dasharray: none; }
+.nav__brand .loom-logo .n { opacity: 1; animation: none; }
+.nav__guest { color: var(--ash); font-size: .8rem; padding: .2rem .8rem; border: 1px dashed rgba(217,169,78,.35); border-radius: 99px; }
+.nav__cta { padding: .4rem 1.1rem; border-radius: 99px; background: var(--thread); color: var(--ink); font-size: .88rem; border-bottom: 0; }
+.nav__cta:hover { background: #e8bd6c; border-bottom: 0; }

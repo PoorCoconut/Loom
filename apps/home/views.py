@@ -1,8 +1,10 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from apps.core.guests import is_guest
 from apps.discover.queries import apply_search, card_queryset, marks, my_stories, order_by, tag_chips
 from apps.discover.views import SORTS, _search_params
 from apps.stories.models import Story
@@ -10,6 +12,8 @@ from apps.stories.models import Story
 
 @login_required
 def home_view(request):
+    if is_guest(request.user) and request.GET.get("view") != "weave":
+        return redirect("discover:discover")
     mine = my_stories(request.user)
     view = "weave" if request.GET.get("view") == "weave" else "home"
     ctx = {"view": view}
@@ -42,6 +46,9 @@ def home_view(request):
 @login_required
 @require_POST
 def create_story(request):
+    if is_guest(request.user):
+        messages.info(request, "Guests can read but not weave. Create an account to write your own story.")
+        return redirect("discover:discover")
     title = (request.POST.get("title") or "").strip()[:150] or "Untitled story"
     story = Story.objects.create(author=request.user, title=title)
     return redirect(f"{reverse('home:home')}?view=weave&story={story.pk}")

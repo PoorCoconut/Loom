@@ -22,6 +22,8 @@ from apps.stories.models import Story, StoryCollaborator, Tag
 
 from apps.user_settings.models import UserSettings
 
+from apps.core.guests import is_guest
+
 from .insights import choices_outline, ending_scenes, generated_sql, unreachable_scenes
 from .logic import coerce
 from .models import GlobalVariable, Node, Path, PathCondition
@@ -38,7 +40,7 @@ def _access(request, story_id):
     if role is None:
         link = StoryCollaborator.objects.filter(story=story, user=request.user).first()
         role = link.role if link else None
-    can_edit = role in ("owner", "editor")
+    can_edit = role in ("owner", "editor") and not is_guest(request.user)
     if not (can_edit or role == "viewer" or story.is_published):
         raise Http404("Story not found.")
     return story, can_edit

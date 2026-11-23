@@ -22,6 +22,7 @@
                 <p class="tagline">Branching tales from other weavers. Search, filter by tag, star your favourites and save them for later.</p>
             </header>
 
+            {% for message in messages %}<div class="flash">{{ message }}</div>{% endfor %}
             {% include 'discover/_search.html' %}
 
             <p class="result-count">{{ stories|length }} stor{{ stories|length|pluralize:"y,ies" }}{% if q %} for &ldquo;{{ q }}&rdquo;{% endif %}{% if active_tags %} tagged {% for t in active_tags %}#{{ t }}{% if not forloop.last %} + {% endif %}{% endfor %}{% endif %}</p>

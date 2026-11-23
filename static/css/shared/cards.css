@@ -52,3 +52,5 @@
 .btn-link { display: inline-block; margin-top: .6rem; padding: .45rem 1.2rem; border-radius: 99px; border: 1px solid var(--thread); color: var(--thread); }
 .btn-link:hover { background: var(--thread); color: var(--ink); }
 .result-count { color: var(--ash); font-size: .85rem; margin: .8rem 0 0; }
+
+.toggle--static { cursor: default; } .toggle--static:hover { background: transparent; color: var(--ash); border-color: rgba(185,166,245,.28); }
