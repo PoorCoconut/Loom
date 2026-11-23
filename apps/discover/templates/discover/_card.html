@@ -1,0 +1,26 @@
+{# One story card. Needs: s, starred_ids, saved_ids, user. Optional: remove_on ('star' | 'save') #}
+{% url 'home:home' as home_url %}
+<article class="scard" data-id="{{ s.pk }}"{% if remove_on %} data-remove-on="{{ remove_on }}"{% endif %}>
+    <div class="scard__top">
+        <span class="scard__status">
+            {% if s.author_id == user.id %}{% if s.is_published %}yours &middot; published{% else %}yours &middot; draft{% endif %}{% else %}by {{ s.author.username }}{% endif %}
+        </span>
+        <span class="scard__scenes">{{ s.scene_count }} scene{{ s.scene_count|pluralize }}</span>
+    </div>
+    <a class="scard__title" href="{{ home_url }}?view=weave&amp;story={{ s.pk }}&amp;mode=read">{{ s.title }}</a>
+    <p class="scard__syn">{{ s.synopsis|default:"No synopsis yet."|truncatechars:110 }}</p>
+    <div class="scard__tags">
+        {% for t in s.tags.all %}<a class="tagchip" href="{% url 'discover:discover' %}?tag={{ t.name|urlencode }}">#{{ t.name }}</a>{% empty %}<span class="scard__notags">no tags</span>{% endfor %}
+    </div>
+    <div class="scard__actions">
+        <a class="scard__read" href="{{ home_url }}?view=weave&amp;story={{ s.pk }}&amp;mode=read">Read</a>
+        {% if s.author_id == user.id %}<a class="scard__edit" href="{{ home_url }}?view=weave&amp;story={{ s.pk }}">Weave</a>{% endif %}
+        <span class="scard__spacer"></span>
+        <button type="button" class="toggle toggle--star" data-toggle="star" aria-pressed="{% if s.pk in starred_ids %}true{% else %}false{% endif %}" title="Star this story">
+            <span class="ico">{% if s.pk in starred_ids %}&#9733;{% else %}&#9734;{% endif %}</span> <span class="count">{{ s.star_count }}</span>
+        </button>
+        <button type="button" class="toggle toggle--save" data-toggle="save" aria-pressed="{% if s.pk in saved_ids %}true{% else %}false{% endif %}" title="Save to your collection">
+            <span class="lbl">{% if s.pk in saved_ids %}Saved &#10003;{% else %}Save{% endif %}</span>
+        </button>
+    </div>
+</article>

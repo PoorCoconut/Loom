@@ -1,0 +1,16 @@
+{# Search bar + tag chips + sort. Needs: q, chips, sort, sorts. Optional: tab #}
+<form class="searchbar" method="get" role="search">
+    {% if tab %}<input type="hidden" name="tab" value="{{ tab }}">{% endif %}
+    {% for c in chips %}{% if c.active %}<input type="hidden" name="tag" value="{{ c.name }}">{% endif %}{% endfor %}
+    <span class="searchbar__icon" aria-hidden="true">&#9906;</span>
+    <input type="search" name="q" value="{{ q }}" placeholder="{{ placeholder|default:'Search titles, synopses, authors or tags…' }}" aria-label="Search">
+    <select name="sort" aria-label="Sort" onchange="this.form.submit()">
+        {% for key, label in sorts %}<option value="{{ key }}"{% if key == sort %} selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <button type="submit">Search</button>
+</form>
+{% if chips %}
+<div class="chips" aria-label="Filter by tag">
+    {% for c in chips %}<a href="{{ c.url }}" class="chip-tag{% if c.active %} is-active{% endif %}">#{{ c.name }}{% if not c.active %} <small>{{ c.count }}</small>{% else %} &times;{% endif %}</a>{% endfor %}
+</div>
+{% endif %}

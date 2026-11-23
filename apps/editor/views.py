@@ -18,7 +18,7 @@ from django.urls import reverse
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_http_methods
 
-from apps.stories.models import Story, StoryCollaborator
+from apps.stories.models import Story, StoryCollaborator, Tag
 
 from apps.user_settings.models import UserSettings
 
@@ -83,6 +83,7 @@ def _graph(story):
             "id": story.story_id, "title": story.title, "synopsis": story.synopsis or "",
             "start": story.starting_node_id if story.starting_node_id in alive else None,
             "published": story.is_published,
+            "tags": [t.name for t in story.tags.all()],
         },
         "nodes": [_node(n) for n in nodes],
         "paths": [_path(p) for p in paths],
@@ -104,7 +105,8 @@ def weave_view(request, story_id):
         "story": story,
         "embed": request.GET.get("embed") == "1",
         "weave": {**_graph(story), "canEdit": can_edit, "apiBase": api_base,
-                  "me": request.user.get_username(), "prefs": prefs.weave_prefs(), "focus": focus},
+                  "me": request.user.get_username(), "prefs": {**prefs.weave_prefs(), **({"defaultMode": "read"} if request.GET.get("mode") == "read" else {})},
+                  "focus": focus, "isAuthor": story.author_id == request.user.id},
     })
 
 
@@ -176,6 +178,39 @@ def _node_of(story, pk):
 
 def _drop_paths_touching(node):
     Path.objects.filter(Q(source_node=node) | Q(target_node=node)).delete()  # soft delete
+
+
+# ---------------------------------------------------------------- story details (title, synopsis, tags, publish)
+
+def _tag_names(raw):
+    names = []
+    for item in raw:
+        name = re.sub(r"\s+", " ", str(item).strip().lower().lstrip("#"))[:50]
+        if name and name not in names:
+            names.append(name)
+    if len(names) > 8:
+        raise ValueError("Use at most 8 tags.")
+    return names
+
+
+@api(["PATCH"])
+def api_story(request, story, body):
+    if "title" in body:
+        title = str(body["title"]).strip()
+        if not title:
+            raise ValueError("A story needs a title.")
+        story.title = title[:150]
+    if "synopsis" in body:
+        story.synopsis = str(body["synopsis"]).strip() or None
+    story.save(update_fields=["title", "synopsis"])
+    if "tags" in body:
+        story.tags.set([Tag.objects.get_or_create(name=n)[0] for n in _tag_names(body["tags"])])
+    if "published" in body:
+        if story.author_id != request.user.id:
+            raise ValueError("Only the author can publish or unpublish a story.")
+        story.publish() if body["published"] else story.unpublish()
+    return {"story": {"title": story.title, "synopsis": story.synopsis or "", "published": story.is_published,
+                      "tags": [t.name for t in story.tags.all()]}}
 
 
 # ---------------------------------------------------------------- nodes

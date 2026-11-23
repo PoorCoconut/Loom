@@ -322,6 +322,46 @@
     panel.scrollTop = S.mode === 'read' ? 0 : top;
   }
 
+  async function saveStory(patch) {
+    try {
+      const d = await api('PATCH', '/story/', patch);
+      Object.assign(S.story, d.story);
+      document.querySelector('.topbar h1').textContent = S.story.title;
+      renderStats();
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function storyDetails() {
+    const title = h('input', { class: 'title-input', type: 'text', value: S.story.title, maxLength: 150, 'aria-label': 'Story title',
+      on: { change: async e => {
+        if (!e.target.value.trim()) { e.target.value = S.story.title; return; }
+        if (await saveStory({ title: e.target.value })) toast('Title saved');
+      } } });
+    const syn = h('textarea', { rows: 3, placeholder: 'A short teaser readers see in Discover…', maxLength: 600,
+      on: { change: async e => { if (await saveStory({ synopsis: e.target.value })) toast('Synopsis saved'); } } });
+    syn.value = S.story.synopsis || '';
+    const tags = h('input', { type: 'text', placeholder: 'cozy, mystery, fantasy  (max 8, comma separated)',
+      value: (S.story.tags || []).join(', '),
+      on: { change: async e => {
+        if (await saveStory({ tags: e.target.value.split(',') })) { e.target.value = S.story.tags.join(', '); toast('Tags saved'); renderPanel(); }
+      } } });
+    const pub = boot.isAuthor ? h('button', { class: 'btn ' + (S.story.published ? '' : 'btn--gold'), on: { click: async () => {
+      if (await saveStory({ published: !S.story.published })) {
+        toast(S.story.published ? 'Published! It now shows up in Discover.' : 'Back to draft. Hidden from Discover.');
+        renderPanel();
+      }
+    } } }, S.story.published ? 'Unpublish' : 'Publish to Discover') : null;
+    return h('div', {},
+      h('div', { class: 'panel__row panel__row--between' },
+        h('span', { class: 'chip' + (S.story.published ? ' chip--moss' : ' chip--gold') }, S.story.published ? '● Published' : '✦ Draft'), pub),
+      h('div', { style: 'margin-top:.8rem' }, title),
+      h('div', { class: 'panel__sub' }, 'Synopsis'), syn,
+      h('div', { class: 'panel__sub' }, 'Tags'), tags,
+      h('div', { class: 'tag-preview' }, (S.story.tags || []).map(t => h('span', { class: 'chip' }, '#' + t))),
+      !S.story.published ? h('p', { class: 'panel__hint' }, 'Publishing needs an opening scene. Published stories appear in Discover for every reader.') : null);
+  }
+
   function overviewPanel() {
     const ends = [...S.nodes.keys()].filter(isEnding).length;
     const branches = [...S.nodes.keys()].filter(id => outgoing(id).length > 1).length;
@@ -339,8 +379,7 @@
       h('div', { class: 'panel__row panel__row--between' },
         h('span', { class: 'chip chip--gold' }, '✦ Story overview'),
         h('span', { class: 'panel__hint' }, S.story.published ? 'Published' : 'Draft')),
-      h('h2', { style: 'font-size:2.2rem;margin:.8rem 0 .2rem' }, S.story.title),
-      h('p', { class: 'panel__hint' }, S.story.synopsis || 'No synopsis yet.'),
+      storyDetails(),
       h('div', { class: 'stat-grid' },
         stat(S.nodes.size, 'Scenes'), stat(branches, 'Forks'), stat(ends, 'Endings')),
       h('div', { class: 'panel__sub' }, 'Opening scene'),

@@ -313,3 +313,5 @@ details.cond-box > summary::before { content: "\2726  "; color: var(--thread); }
 
 .topbar__link { padding: .4rem 1rem; border-radius: 99px; font-size: .88rem; color: var(--w-lilac); border: 1px solid rgba(185,166,245,.3); background: rgba(185,166,245,.08); }
 .topbar__link:hover { color: var(--ink); background: var(--thread); border-color: var(--thread); }
+
+.tag-preview { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .6rem; }

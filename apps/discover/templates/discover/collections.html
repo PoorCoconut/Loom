@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>Collections · Loom</title>
+    <link rel="stylesheet" href="{% static 'css/shared/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/shared/nav.css' %}">
+    <link rel="stylesheet" href="{% static 'css/shared/cards.css' %}">
+    <link rel="stylesheet" href="{% static 'css/discover/discover.css' %}">
+</head>
+<body class="app-body">
+<div class="app-shell">
+    {% include 'home/_nav.html' %}
+    <main class="page-scroll">
+        <div class="page-wrap">
+            <header class="page-head">
+                <span class="eyebrow">&#9733; Collections</span>
+                <h1>Your bookshelf</h1>
+                <p class="tagline">Stories you saved to read later, and the ones you starred.</p>
+            </header>
+
+            <div class="tabs-pill" role="tablist">
+                <a href="?tab=saved" class="{% if tab == 'saved' %}is-active{% endif %}">Saved <small>{{ counts.saved }}</small></a>
+                <a href="?tab=starred" class="{% if tab == 'starred' %}is-active{% endif %}">&#9733; Starred <small>{{ counts.starred }}</small></a>
+            </div>
+
+            {% include 'discover/_search.html' with placeholder="Search your collection…" %}
+
+            <div class="grid">
+                {% for s in stories %}{% include 'discover/_card.html' %}{% empty %}
+                <div class="empty">
+                    <div class="empty__spark">{% if tab == 'saved' %}&#10070;{% else %}&#9733;{% endif %}</div>
+                    <h2>{% if q %}No matches{% elif tab == 'saved' %}Nothing saved yet{% else %}No stars yet{% endif %}</h2>
+                    <p>{% if q %}Try different words.{% else %}Browse Discover and tap <b>{% if tab == 'saved' %}Save{% else %}&#9734;{% endif %}</b> on a story you like.{% endif %}</p>
+                    <a class="btn-link" href="{% url 'discover:discover' %}">Go to Discover</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+</div>
+<script src="{% static 'js/discover/engage.js' %}"></script>
+</body>
+</html>

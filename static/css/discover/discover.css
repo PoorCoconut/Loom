@@ -1,0 +1,11 @@
+.page-scroll { overflow-y: auto; min-height: 0; padding: 2.4rem 1.2rem 4rem; background: radial-gradient(ellipse at 70% 0%, #2a2158 0%, #15122a 60%); }
+.page-wrap { max-width: 1120px; margin: 0 auto; }
+.page-head { margin-bottom: 1.4rem; }
+.page-head h1 { font-size: 3rem; margin: .1rem 0; }
+.page-head .tagline { margin: 0; max-width: 620px; }
+.eyebrow { font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; color: var(--thread); }
+.tabs-pill { display: inline-flex; gap: .3rem; padding: 4px; border-radius: 99px; background: #120f26; border: 1px solid rgba(217,169,78,.22); margin-bottom: 1rem; }
+.tabs-pill a { padding: .4rem 1.2rem; border-radius: 99px; color: var(--ash); border-bottom-width: 0; font-size: .9rem; }
+.tabs-pill a small { opacity: .7; margin-left: .25rem; }
+.tabs-pill a:hover { color: var(--parchment); border-bottom-width: 0; }
+.tabs-pill a.is-active { background: var(--thread); color: var(--ink); box-shadow: 0 0 18px rgba(217,169,78,.3); }

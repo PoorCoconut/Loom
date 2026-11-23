@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>Discover · Loom</title>
+    <link rel="stylesheet" href="{% static 'css/shared/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/shared/nav.css' %}">
+    <link rel="stylesheet" href="{% static 'css/shared/cards.css' %}">
+    <link rel="stylesheet" href="{% static 'css/discover/discover.css' %}">
+</head>
+<body class="app-body">
+<div class="app-shell">
+    {% include 'home/_nav.html' %}
+    <main class="page-scroll">
+        <div class="page-wrap">
+            <header class="page-head">
+                <span class="eyebrow">&#9678; Discover</span>
+                <h1>Stories to get lost in</h1>
+                <p class="tagline">Branching tales from other weavers. Search, filter by tag, star your favourites and save them for later.</p>
+            </header>
+
+            {% include 'discover/_search.html' %}
+
+            <p class="result-count">{{ stories|length }} stor{{ stories|length|pluralize:"y,ies" }}{% if q %} for &ldquo;{{ q }}&rdquo;{% endif %}{% if active_tags %} tagged {% for t in active_tags %}#{{ t }}{% if not forloop.last %} + {% endif %}{% endfor %}{% endif %}</p>
+
+            <div class="grid">
+                {% for s in stories %}{% include 'discover/_card.html' %}{% empty %}
+                <div class="empty">
+                    <div class="empty__spark">&#10022;</div>
+                    <h2>Nothing found</h2>
+                    <p>{% if q or active_tags %}Try fewer words or remove a tag.{% else %}No stories have been published yet. Publish one from your Weave screen!{% endif %}</p>
+                    {% if q or active_tags %}<a class="btn-link" href="{% url 'discover:discover' %}">Clear search</a>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+</div>
+<script src="{% static 'js/discover/engage.js' %}"></script>
+</body>
+</html>

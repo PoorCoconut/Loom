@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'apps.editor',
     'apps.engagement',
     'apps.reading',
+    'apps.discover',
 ]
 
 MIDDLEWARE = [
@@ -71,6 +72,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'apps.home.context_processors.nav',
             ],
         },
     },

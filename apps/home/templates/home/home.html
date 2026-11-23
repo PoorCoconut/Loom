@@ -4,9 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <title>{% if view == 'weave' %}Weave{% else %}Home{% endif %} · Loom</title>
     <link rel="stylesheet" href="{% static 'css/shared/base.css' %}">
     <link rel="stylesheet" href="{% static 'css/shared/nav.css' %}">
+    <link rel="stylesheet" href="{% static 'css/shared/cards.css' %}">
     <link rel="stylesheet" href="{% static 'css/home/home.css' %}">
 </head>
 <body class="home-body">
@@ -30,17 +32,16 @@
         <div class="library">
             <h1>Welcome back, {{ user.username }}</h1>
             <p class="tagline">Pick a story to keep weaving, or start a new thread.</p>
-            <div class="library__grid">
-                {% for s in stories %}
-                <a class="book" href="?view=weave&story={{ s.pk }}">
-                    <span class="book__status">{% if s.author_id != user.id %}shared &middot; {% endif %}{% if s.is_published %}published{% else %}draft{% endif %}</span>
-                    <span class="book__title">{{ s.title }}</span>
-                    <span class="book__syn">{{ s.synopsis|default:"No synopsis yet."|truncatechars:90 }}</span>
-                    <span class="book__go">Open in Weave &rarr;</span>
-                </a>
+
+            {% if has_any %}{% include 'discover/_search.html' with placeholder="Search your stories…" %}{% endif %}
+
+            <div class="grid">
+                {% for s in stories %}{% include 'discover/_card.html' %}{% empty %}
+                    {% if has_any %}<div class="empty"><h2>No matches</h2><p>None of your stories match that search.</p><a class="btn-link" href="{% url 'home:home' %}">Clear search</a></div>{% endif %}
                 {% endfor %}
-                <div class="book book--new">
-                    <span class="book__title">A new story</span>
+                <div class="scard scard--new">
+                    <span class="scard__title">A new story</span>
+                    <p class="scard__syn">Name it now &mdash; you can add a synopsis, tags and publish it from the Weave screen.</p>
                     {% include 'home/_new_story_form.html' %}
                 </div>
             </div>
@@ -48,5 +49,6 @@
     {% endif %}
     </main>
 </div>
+<script src="{% static 'js/discover/engage.js' %}"></script>
 </body>
 </html>
