@@ -22,6 +22,7 @@ from apps.stories.models import Story, StoryCollaborator
 
 from apps.user_settings.models import UserSettings
 
+from .insights import choices_outline, ending_scenes, generated_sql, unreachable_scenes
 from .logic import coerce
 from .models import GlobalVariable, Node, Path, PathCondition
 
@@ -95,13 +96,42 @@ def _graph(story):
 @xframe_options_sameorigin
 def weave_view(request, story_id):
     story, can_edit = _access(request, story_id)
+    focus = request.GET.get("node")
+    focus = int(focus) if focus and focus.isdigit() and story.nodes.filter(pk=focus).exists() else None
     prefs, _ = UserSettings.objects.get_or_create(user=request.user)
     api_base = reverse("editor:api_nodes", args=[story.pk]).rsplit("/nodes/", 1)[0]
     return render(request, "editor/weave.html", {
         "story": story,
         "embed": request.GET.get("embed") == "1",
         "weave": {**_graph(story), "canEdit": can_edit, "apiBase": api_base,
-                  "me": request.user.get_username(), "prefs": prefs.weave_prefs()},
+                  "me": request.user.get_username(), "prefs": prefs.weave_prefs(), "focus": focus},
+    })
+
+
+@login_required
+@xframe_options_sameorigin
+def insights_view(request, story_id):
+    story, can_edit = _access(request, story_id)
+    if not can_edit:
+        raise Http404("Only the author and editors can see Insights.")
+    outline_qs = choices_outline(story)
+    unreachable_qs = unreachable_scenes(story)
+    endings_qs = ending_scenes(story)
+    outline = list(outline_qs)
+    unreachable, endings = list(unreachable_qs), list(endings_qs)
+    embed = request.GET.get("embed") == "1"
+    suffix = "?embed=1" if embed else ""
+    return render(request, "editor/insights.html", {
+        "story": story, "embed": embed, "outline": outline,
+        "unreachable": unreachable, "endings": endings,
+        "empty_scenes": list(Node.objects.filter(story=story, text_content="")),
+        "scene_count": Node.objects.filter(story=story).count(),
+        "weave_url": reverse("editor:weave", args=[story.pk]) + suffix,
+        "node_url_base": reverse("editor:weave", args=[story.pk]),
+        "embed_qs": "&embed=1" if embed else "",
+        "sql_join": generated_sql(outline_qs),
+        "sql_unreachable": generated_sql(unreachable_qs),
+        "sql_endings": generated_sql(endings_qs),
     })
 
 

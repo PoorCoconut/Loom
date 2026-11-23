@@ -672,5 +672,6 @@
   if (S.mode === 'read') startRead();
   renderGraph(); renderPanel();
   requestAnimationFrame(() => (S.mode === 'read' && S.read ? (fitView(false), setTimeout(() => focusNode(S.read.current), 150)) : fitView(false)));
-  if (S.canEdit && prefs.defaultMode === 'read') setMode('read');
+  if (S.canEdit && boot.focus && S.nodes.has(boot.focus)) setTimeout(() => { selectNode(boot.focus); focusNode(boot.focus); }, 200);
+  else if (S.canEdit && prefs.defaultMode === 'read') setMode('read');
 })();

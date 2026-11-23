@@ -19,6 +19,7 @@
             <h1>{{ story.title }}</h1>
         </div>
         <div class="topbar__stats" id="stats"></div>
+        {% if weave.canEdit %}<a class="topbar__link" href="{% url 'editor:insights' story.pk %}{% if embed %}?embed=1{% endif %}" title="Outline and health check for this story">&#9678; Insights</a>{% endif %}
         <div class="mode-switch" id="mode-switch" role="tablist" aria-label="View mode">
             <button role="tab" data-mode="edit" class="is-active"><span aria-hidden="true">&#9998;</span> Edit</button>
             <button role="tab" data-mode="read"><span aria-hidden="true">&#10070;</span> Read</button>

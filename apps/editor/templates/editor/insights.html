@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Insights · {{ story.title }} · Loom</title>
+    <link rel="stylesheet" href="{% static 'css/shared/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/editor/insights.css' %}">
+</head>
+<body class="ins-body">
+<header class="ins-top">
+    <a class="ins-back" href="{{ weave_url }}">&#8592; Back to Weave</a>
+    <div><span class="ins-eyebrow">Insights</span><h1>{{ story.title }}</h1></div>
+</header>
+
+<main class="ins">
+    <section class="summary">
+        <div class="sum"><b>{{ scene_count }}</b><span>Scenes</span></div>
+        <div class="sum"><b>{{ outline|length }}</b><span>Choices</span></div>
+        <div class="sum"><b>{{ endings|length }}</b><span>Endings</span></div>
+        <div class="sum {% if unreachable %}sum--warn{% else %}sum--ok{% endif %}"><b>{{ unreachable|length }}</b><span>Unreachable</span></div>
+    </section>
+
+    <div class="tabs" role="tablist">
+        <button role="tab" class="is-active" data-tab="outline">&#10070; Outline <small>JOIN</small></button>
+        <button role="tab" data-tab="health">&#9678; Health check <small>SUBQUERY</small></button>
+    </div>
+
+    <!-- ================= OUTLINE (JOIN) ================= -->
+    <section class="pane is-active" id="pane-outline">
+        <div class="why">
+            <h2>Every choice, with both ends named</h2>
+            <p>A choice is stored as two scene ids. This table <b>joins</b> each choice to the scene it starts from <i>and</i> the scene it leads to, so you can proof-read your whole story at a glance: spot a typo in a choice, a choice sent to the wrong scene, or a scene with a suspiciously long list of branches.</p>
+        </div>
+
+        {% if outline %}
+        <input type="search" id="filter" placeholder="Filter by scene or choice text…" aria-label="Filter outline">
+        <div class="table-wrap">
+        <table class="outline" id="outline">
+            <thead><tr><th>From scene</th><th>Choice the reader sees</th><th>Leads to</th></tr></thead>
+            <tbody>
+            {% for p in outline %}
+                <tr>
+                    <td><a href="{{ node_url_base }}?node={{ p.source_node.pk }}{{ embed_qs }}">{{ p.source_node.node_title }}</a></td>
+                    <td class="choice">&ldquo;{{ p.choice_text }}&rdquo;</td>
+                    <td><span class="arrow">&rarr;</span> <a href="{{ node_url_base }}?node={{ p.target_node.pk }}{{ embed_qs }}">{{ p.target_node.node_title }}</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        {% else %}
+        <p class="empty">No choices yet. Add a branch in Weave and it will appear here.</p>
+        {% endif %}
+
+        <details class="sql"><summary>Show the generated SQL <small>(JOIN)</small></summary>
+            <p>Django&rsquo;s <code>select_related('source_node', 'target_node')</code> turns into two joins on the same table:</p>
+            <pre>{{ sql_join }}</pre>
+        </details>
+    </section>
+
+    <!-- ================= HEALTH (SUBQUERY) ================= -->
+    <section class="pane" id="pane-health">
+        <div class="why">
+            <h2>Find the loose threads before readers do</h2>
+            <p>In a branching story it is easy to write a scene that nothing leads to, so no reader can ever see it. Each check below uses a <b>subquery</b>: the inner query collects the scenes that <i>are</i> connected, and the outer query returns the scenes that are <i>not</i> in that list.</p>
+        </div>
+
+        <article class="check {% if unreachable %}check--warn{% else %}check--ok{% endif %}">
+            <header><h3>Unreachable scenes</h3>
+                <span class="badge">{% if unreachable %}{{ unreachable|length }} found{% else %}all clear ✓{% endif %}</span></header>
+            {% if unreachable %}
+                <p>No choice leads to these scenes (and they are not the opening scene), so readers can never reach them. Link a choice to them, or delete them.</p>
+                <ul>{% for n in unreachable %}<li><a href="{{ node_url_base }}?node={{ n.pk }}{{ embed_qs }}">{{ n.node_title }}</a><span>fix in Weave &rarr;</span></li>{% endfor %}</ul>
+            {% else %}<p>Every scene can be reached from the opening. Lovely.</p>{% endif %}
+            <details class="sql"><summary>Show the generated SQL <small>(inner + outer query)</small></summary><pre>{{ sql_unreachable }}</pre></details>
+        </article>
+
+        <article class="check check--info">
+            <header><h3>Endings</h3><span class="badge">{{ endings|length }} found</span></header>
+            {% if endings %}
+                <p>Scenes with no outgoing choice. These are where a reader&rsquo;s journey stops, so make sure each one is meant to be an ending.</p>
+                <ul>{% for n in endings %}<li><a href="{{ node_url_base }}?node={{ n.pk }}{{ embed_qs }}">{{ n.node_title }}</a><span>{% if n.pk == story.starting_node_id %}opening scene with no choices{% else %}ending{% endif %}</span></li>{% endfor %}</ul>
+            {% else %}<p>No endings yet. Every scene leads somewhere, so readers can wander forever.</p>{% endif %}
+            <details class="sql"><summary>Show the generated SQL <small>(inner + outer query)</small></summary><pre>{{ sql_endings }}</pre></details>
+        </article>
+
+        {% if empty_scenes %}
+        <article class="check check--warn">
+            <header><h3>Scenes with no text</h3><span class="badge">{{ empty_scenes|length }} found</span></header>
+            <ul>{% for n in empty_scenes %}<li><a href="{{ node_url_base }}?node={{ n.pk }}{{ embed_qs }}">{{ n.node_title }}</a><span>write it &rarr;</span></li>{% endfor %}</ul>
+        </article>
+        {% endif %}
+    </section>
+</main>
+
+<script>
+(() => {
+  const tabs = document.querySelectorAll('.tabs button'), panes = document.querySelectorAll('.pane');
+  const show = name => { tabs.forEach(t => t.classList.toggle('is-active', t.dataset.tab === name)); panes.forEach(p => p.classList.toggle('is-active', p.id === 'pane-' + name)); history.replaceState(null, '', '#' + name); };
+  tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.tab)));
+  if (location.hash === '#health') show('health');
+  const f = document.getElementById('filter');
+  if (f) f.addEventListener('input', () => {
+    const q = f.value.trim().toLowerCase();
+    document.querySelectorAll('#outline tbody tr').forEach(r => r.hidden = q && !r.textContent.toLowerCase().includes(q));
+  });
+})();
+</script>
+</body>
+</html>

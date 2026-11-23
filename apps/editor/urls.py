@@ -5,6 +5,7 @@ from . import views
 app_name = "editor"
 urlpatterns = [
     path("<int:story_id>/weave/", views.weave_view, name="weave"),
+    path("<int:story_id>/insights/", views.insights_view, name="insights"),
     path("<int:story_id>/api/nodes/", views.api_nodes, name="api_nodes"),
     path("<int:story_id>/api/nodes/<int:node_id>/", views.api_node, name="api_node"),
     path("<int:story_id>/api/positions/", views.api_positions, name="api_positions"),
