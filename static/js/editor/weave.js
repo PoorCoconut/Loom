@@ -21,6 +21,7 @@
     view: { x: 60, y: 60, k: 1 },
     wide: false, branchKind: 'new', showMap: !!(boot.prefs && boot.prefs.revealMap),
     read: null,
+    sharing: boot.sharing || null,
   };
 
   const $ = id => document.getElementById(id);
@@ -362,6 +363,52 @@
       !S.story.published ? h('p', { class: 'panel__hint' }, 'Publishing needs an opening scene. Published stories appear in Discover for every reader.') : null);
   }
 
+  function sharingSection() {
+    const sh = S.sharing; if (!sh) return null;
+    const copy = async url => {
+      try { await navigator.clipboard.writeText(url); toast('Link copied. Send it to anyone!'); }
+      catch (e) { window.prompt('Copy this link:', url); }
+    };
+    const make = async role => {
+      const d = await api('POST', '/share/', { role }).catch(() => null);
+      if (d) { sh.links.push(d.link); renderPanel(); copy(d.link.url); }
+    };
+    const linkRow = l => h('div', { class: 'sharelink' },
+      h('div', { class: 'panel__row panel__row--between' },
+        h('span', { class: 'chip ' + (l.role === 'editor' ? 'chip--gold' : 'chip--moss') }, l.role === 'editor' ? '✎ Edit link' : '❖ Read link'),
+        h('small', { class: 'panel__hint' }, `opened ${l.uses} time${l.uses === 1 ? '' : 's'}`)),
+      h('div', { class: 'sharelink__row' },
+        h('input', { type: 'text', readOnly: true, value: l.url, on: { focus: e => e.target.select() }, 'aria-label': 'Share link' }),
+        h('button', { class: 'btn btn--sm', on: { click: () => copy(l.url) } }, 'Copy'),
+        h('button', { class: 'icon-btn', title: 'Delete this link (it stops working)', on: { click: async () => {
+          if (!confirm('Delete this link? Nobody will be able to use it any more. People who already joined keep their access.')) return;
+          await api('DELETE', `/share/${l.id}/`).catch(() => null);
+          sh.links = sh.links.filter(x => x.id !== l.id); renderPanel();
+        } } }, '×')));
+    const collabRow = c => {
+      const sel = h('select', { on: { change: async e => {
+        const d = await api('PATCH', `/collaborators/${c.id}/`, { role: e.target.value }).catch(() => null);
+        if (d) { c.role = d.role; toast(`${c.username} can now ${c.role === 'editor' ? 'edit' : 'read'}`); } else e.target.value = c.role;
+      } } }, h('option', { value: 'editor' }, 'Can edit'), h('option', { value: 'viewer' }, 'Can read'));
+      sel.value = c.role;
+      return h('div', { class: 'var-row' }, h('code', {}, c.username), sel,
+        h('button', { class: 'icon-btn', title: 'Remove access', on: { click: async () => {
+          if (!confirm(`Remove ${c.username}'s access?`)) return;
+          await api('DELETE', `/collaborators/${c.id}/`).catch(() => null);
+          sh.collabs = sh.collabs.filter(x => x.id !== c.id); renderPanel();
+        } } }, '×'));
+    };
+    return h('div', {},
+      h('div', { class: 'panel__sub' }, 'Share & collaborate'),
+      h('p', { class: 'panel__hint' }, 'Anyone with a read link can read this story, even while it is a draft, and guests can open it too. An edit link lets people with an account edit scenes, choices and tags. Only you can publish or manage sharing.'),
+      h('div', { class: 'panel__row', style: 'margin:.8rem 0' },
+        h('button', { class: 'btn', on: { click: () => make('viewer') } }, '+ Read link'),
+        h('button', { class: 'btn', on: { click: () => make('editor') } }, '+ Edit link')),
+      sh.links.map(linkRow),
+      h('div', { class: 'panel__sub' }, `People with access · ${sh.collabs.length}`),
+      sh.collabs.length ? sh.collabs.map(collabRow) : h('p', { class: 'panel__hint' }, 'Nobody has joined through a link yet.'));
+  }
+
   function overviewPanel() {
     const ends = [...S.nodes.keys()].filter(isEnding).length;
     const branches = [...S.nodes.keys()].filter(id => outgoing(id).length > 1).length;
@@ -380,6 +427,7 @@
         h('span', { class: 'chip chip--gold' }, '✦ Story overview'),
         h('span', { class: 'panel__hint' }, S.story.published ? 'Published' : 'Draft')),
       storyDetails(),
+      sharingSection(),
       h('div', { class: 'stat-grid' },
         stat(S.nodes.size, 'Scenes'), stat(branches, 'Forks'), stat(ends, 'Endings')),
       h('div', { class: 'panel__sub' }, 'Opening scene'),

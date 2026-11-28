@@ -5,7 +5,9 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from apps.core.guests import is_guest
-from apps.discover.queries import apply_search, card_queryset, marks, my_stories, order_by, tag_chips
+from django.db.models import Q
+
+from apps.discover.queries import apply_search, card_queryset, editor_ids, marks, my_stories, order_by, tag_chips
 from apps.discover.views import SORTS, _search_params
 from apps.stories.models import Story
 
@@ -25,7 +27,10 @@ def home_view(request):
         if wanted and wanted.isdigit():
             selected = next((s for s in stories if s.pk == int(wanted)), None)
             # Other people's published stories can be read here too (opened from Discover).
-            selected = selected or Story.objects.filter(pk=int(wanted), is_published=True).first()
+            # ...and so can stories opened through a read link (remembered in the session).
+            shared = request.session.get("shared_reads", [])
+            selected = selected or Story.objects.filter(pk=int(wanted)).filter(
+                Q(is_published=True) | Q(pk__in=shared)).first()
         selected = selected or (stories[0] if stories else None)
         src = reverse("editor:weave", args=[selected.pk]) + "?embed=1" if selected else None
         if src and request.GET.get("mode") == "read":
@@ -36,7 +41,7 @@ def home_view(request):
         library = list(order_by(card_queryset(apply_search(mine, q, tags)), sort if sort != "new" else "new"))
         starred, saved = marks(request.user, library)
         ctx.update(
-            stories=library, starred_ids=starred, saved_ids=saved, q=q, sort=sort, sorts=SORTS,
+            stories=library, starred_ids=starred, saved_ids=saved, editor_ids=editor_ids(request.user, library), q=q, sort=sort, sorts=SORTS,
             has_any=mine.exists(),
             chips=tag_chips(mine, tags, {"q": q, "sort": sort if sort != "new" else ""}),
         )

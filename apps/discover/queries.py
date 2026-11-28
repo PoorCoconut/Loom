@@ -8,7 +8,7 @@ from urllib.parse import urlencode
 from django.db.models import Count, F, Q
 
 from apps.engagement.models import StoryFavourite, StoryLike
-from apps.stories.models import Story, Tag
+from apps.stories.models import Story, StoryCollaborator, Tag
 
 
 def visible_stories(user):
@@ -82,3 +82,11 @@ def tag_chips(base_qs, active, params, limit=24):
             "count": next((t.n for t in tags if t.name == name), 0),
         })
     return chips
+
+
+def editor_ids(user, stories):
+    """Stories shared with this user as an editor (their Weave button shows up on the card)."""
+    return set(
+        StoryCollaborator.objects.filter(user=user, role="editor", story_id__in=[s.pk for s in stories])
+        .values_list("story_id", flat=True)
+    )

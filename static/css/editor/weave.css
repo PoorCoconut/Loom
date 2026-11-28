@@ -315,3 +315,8 @@ details.cond-box > summary::before { content: "\2726  "; color: var(--thread); }
 .topbar__link:hover { color: var(--ink); background: var(--thread); border-color: var(--thread); }
 
 .tag-preview { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .6rem; }
+
+.sharelink { padding: .7rem .8rem; border-radius: 14px; margin-bottom: .6rem; background: rgba(51,43,94,.5); border: 1px solid rgba(185,166,245,.16); }
+.sharelink__row { display: flex; gap: .4rem; margin-top: .5rem; align-items: center; }
+.sharelink__row input { font-size: .78rem !important; font-family: ui-monospace, monospace; color: #cdbff6 !important; }
+.var-row select { width: auto; margin-left: auto; padding: .2rem .5rem; font-size: .8rem; }

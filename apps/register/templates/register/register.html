@@ -34,7 +34,7 @@
                 {% endfor %}
                 <button type="submit" class="btn-main">Register</button>
             </form>
-            <p class="auth-foot"><a href="{% url 'login:login' %}">Back to Login</a></p>
+            <p class="auth-foot"><a href="{% url 'login:login' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Back to Login</a></p>
         </section>
     </div>
 </main>

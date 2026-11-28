@@ -8,7 +8,7 @@ from apps.core.guests import is_guest
 from apps.engagement.models import StoryFavourite, StoryLike
 from apps.stories.models import Story
 
-from .queries import apply_search, card_queryset, marks, order_by, tag_chips, visible_stories
+from .queries import apply_search, card_queryset, editor_ids, marks, order_by, tag_chips, visible_stories
 
 SORTS = [("new", "Newest"), ("starred", "Most starred"), ("title", "A–Z")]
 
@@ -30,6 +30,7 @@ def discover_view(request):
         "view": "discover", "q": q, "sort": sort, "sorts": SORTS, "active_tags": tags,
         "chips": tag_chips(base, tags, {"q": q, "sort": sort if sort != "new" else ""}),
         "stories": stories, "starred_ids": starred, "saved_ids": saved,
+        "editor_ids": editor_ids(request.user, stories),
     })
 
 
@@ -53,6 +54,7 @@ def collections_view(request):
         "view": "collections", "tab": tab, "remove_on": "save" if tab == "saved" else "star", "counts": counts, "q": q, "sort": sort, "sorts": SORTS,
         "chips": tag_chips(base, tags, {"q": q, "tab": tab, "sort": sort if sort != "new" else ""}),
         "stories": stories, "starred_ids": starred, "saved_ids": saved,
+        "editor_ids": editor_ids(request.user, stories),
     })
 
 

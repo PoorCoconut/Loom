@@ -14,7 +14,7 @@
     </div>
     <div class="scard__actions">
         <a class="scard__read" href="{{ home_url }}?view=weave&amp;story={{ s.pk }}&amp;mode=read">Read</a>
-        {% if s.author_id == user.id %}<a class="scard__edit" href="{{ home_url }}?view=weave&amp;story={{ s.pk }}">Weave</a>{% endif %}
+        {% if s.author_id == user.id or s.pk in editor_ids %}<a class="scard__edit" href="{{ home_url }}?view=weave&amp;story={{ s.pk }}">Weave</a>{% endif %}
         <span class="scard__spacer"></span>
         {% if is_guest %}<span class="toggle toggle--static" title="Stars from readers">&#9733; <span class="count">{{ s.star_count }}</span></span>{% else %}
         <button type="button" class="toggle toggle--star" data-toggle="star" aria-pressed="{% if s.pk in starred_ids %}true{% else %}false{% endif %}" title="Star this story">

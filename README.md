@@ -54,6 +54,15 @@ The heart of Loom. One screen with two modes, switched by a single toggle.
 - The graph glows along the path you've taken. Scenes you haven't reached yet stay **fogged** as `?`.
 - Authors can reveal the full map, or click any scene to start reading from there.
 
+### 🔗 Share and collaborate
+Send your story to anyone with a link. Open **Weave → Story overview → Share & collaborate**.
+- **Read link:** anyone who opens it can read the story, **even while it's a draft**. No account is needed, since guests can use it too.
+- **Edit link:** people with an account who open it become **editor collaborators**, and can edit scenes, choices and tags. If a guest opens an edit link, they're asked to create an account first and then sent back.
+- Copy a link in one click, see how many times it was opened, and **delete** it to stop it working.
+- **People with access:** see everyone who joined through a link, switch them between *Can edit* and *Can read*, or remove them.
+- Only the **author** can publish, unpublish or manage sharing.
+- Stories shared with you appear in your Home library, and editors get a **Weave** button on the card.
+
 ### 🔭 Discover
 Find stories from other weavers.
 - Browse every **published** story.
@@ -100,6 +109,7 @@ Deep purple twilight, warm gold thread, stitched dashed borders, a serif storybo
 | Home | `/` | Your library, with search and tags |
 | Weave | `/?view=weave&story=<id>` | Embedded in Home. Standalone at `/stories/<id>/weave/` |
 | Insights | `/stories/<id>/insights/` | Authors and editors only |
+| Share link | `/stories/join/<token>/` | Opens a story through a read or edit link |
 | Discover | `/discover/` | Published stories, with search and tags |
 | Collections | `/collections/` | Saved and Starred |
 | Profile | `/profiles/` | |
@@ -121,7 +131,7 @@ Deep purple twilight, warm gold thread, stitched dashed borders, a serif storybo
 | Area | Tables |
 |---|---|
 | Users | `auth_user`, `profiles_profile`, `user_settings_usersettings` |
-| Stories | `stories_story`, `stories_tag`, `stories_storytag`, `stories_storycollaborator` |
+| Stories | `stories_story`, `stories_tag`, `stories_storytag`, `stories_storycollaborator`, `stories_storysharelink` |
 | Story graph | `editor_node` (scenes), `editor_path` (choices), `editor_globalvariable`, `editor_pathcondition` |
 | Engagement | `engagement_storylike` (stars), `engagement_storyfavourite` (saves), `engagement_review` |
 | Reading | `reading_readingsession` |
@@ -153,7 +163,7 @@ DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/postgres
 
 Leave it out to use a local SQLite database.
 
-**3. Create the tables**
+**3. Create the tables** (this includes the share-link table)
 
 ```bash
 python manage.py migrate
@@ -209,10 +219,12 @@ static/
 | | Guest | Member | Collaborator (editor) | Author |
 |---|:-:|:-:|:-:|:-:|
 | Read published stories | ✅ | ✅ | ✅ | ✅ |
+| Read a draft through a read link | ✅ | ✅ | ✅ | ✅ |
 | Star and save | ❌ | ✅ | ✅ | ✅ |
 | Edit scenes, choices, tags | ❌ | ❌ | ✅ | ✅ |
 | Open Insights | ❌ | ❌ | ✅ | ✅ |
 | Publish or unpublish | ❌ | ❌ | ❌ | ✅ |
+| Create or delete share links, manage collaborators | ❌ | ❌ | ❌ | ✅ |
 
 Unpublished stories are only visible to their author and collaborators, and every editing endpoint checks this on the server.
 
@@ -222,7 +234,7 @@ Unpublished stories are only visible to their author and collaborators, and ever
 
 - Save reading progress to `ReadingSession` so readers can resume where they stopped.
 - Reviews and ratings on story cards (the `Review` table already exists).
-- Inviting collaborators from inside the app.
+- Inviting collaborators by username, and link expiry dates.
 - Email notifications (the setting exists; nothing sends yet).
 - Cover images on story cards.
 

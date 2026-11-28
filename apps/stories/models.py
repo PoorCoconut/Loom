@@ -1,3 +1,5 @@
+import secrets
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -97,3 +99,32 @@ class StoryCollaborator(models.Model):
 
     def __str__(self):
         return f"{self.user} -> {self.story} ({self.role})"
+
+
+class StoryShareLink(models.Model):
+    """A secret link the author can send around.
+
+    viewer link -> anyone who opens it can read the story (even while it is a draft).
+    editor link -> signed-in members who open it become editor collaborators.
+    Deleting the link stops it working; people who already joined stay until removed.
+    """
+
+    class Role(models.TextChoices):
+        VIEWER = "viewer", "Read"
+        EDITOR = "editor", "Edit"
+
+    story = models.ForeignKey(Story, on_delete=models.CASCADE, related_name="share_links")
+    token = models.CharField(max_length=64, unique=True)
+    role = models.CharField(max_length=20, choices=Role.choices, default=Role.VIEWER)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    use_count = models.PositiveIntegerField(default=0)
+
+    @staticmethod
+    def new_token():
+        return secrets.token_urlsafe(18)
+
+    def __str__(self):
+        return f"{self.get_role_display()} link for {self.story}"

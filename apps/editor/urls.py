@@ -4,6 +4,10 @@ from . import views
 
 app_name = "editor"
 urlpatterns = [
+    path("join/<str:token>/", views.join_view, name="join"),
+    path("<int:story_id>/api/share/", views.api_share, name="api_share"),
+    path("<int:story_id>/api/share/<int:link_id>/", views.api_share_link, name="api_share_link"),
+    path("<int:story_id>/api/collaborators/<int:collab_id>/", views.api_collaborator, name="api_collaborator"),
     path("<int:story_id>/weave/", views.weave_view, name="weave"),
     path("<int:story_id>/insights/", views.insights_view, name="insights"),
     path("<int:story_id>/api/story/", views.api_story, name="api_story"),

@@ -16,6 +16,7 @@
 
     {% include 'home/_nav.html' %}
 
+    {% if messages %}<div class="home-flash">{% for message in messages %}<div>{{ message }}</div>{% endfor %}</div>{% endif %}
     <main class="workspace">
     {% if view == 'weave' %}
         {% if weave_src %}

@@ -15,3 +15,7 @@
 .workspace__empty .new-story { width: min(340px, 80vw); margin-top: 1rem; }
 .workspace__spark { font-size: 2.4rem; color: var(--thread); text-shadow: 0 0 24px var(--thread); }
 
+
+.home-flash { position: fixed; top: 74px; left: 50%; transform: translateX(-50%); z-index: 20; padding: .6rem 1.2rem; border-radius: 99px; background: #332b5e;
+  border: 1px solid rgba(217,169,78,.5); color: var(--parchment); font-size: .9rem; box-shadow: 0 10px 30px rgba(8,5,25,.5); animation: flash 6s ease forwards; }
+@keyframes flash { 0%,85% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, -12px); pointer-events: none; } }

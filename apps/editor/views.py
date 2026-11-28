@@ -9,16 +9,18 @@ import re
 from functools import wraps
 
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
+from django.contrib import messages
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.db.models import Q
 from django.http import Http404, JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.db.models import F
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_http_methods
 
-from apps.stories.models import Story, StoryCollaborator, Tag
+from apps.stories.models import Story, StoryCollaborator, StoryShareLink, Tag
 
 from apps.user_settings.models import UserSettings
 
@@ -41,7 +43,8 @@ def _access(request, story_id):
         link = StoryCollaborator.objects.filter(story=story, user=request.user).first()
         role = link.role if link else None
     can_edit = role in ("owner", "editor") and not is_guest(request.user)
-    if not (can_edit or role == "viewer" or story.is_published):
+    shared = story.pk in request.session.get("shared_reads", [])
+    if not (can_edit or role == "viewer" or story.is_published or shared):
         raise Http404("Story not found.")
     return story, can_edit
 
@@ -93,6 +96,68 @@ def _graph(story):
     }
 
 
+# ---------------------------------------------------------------- sharing
+
+MAX_LINKS = 10
+
+
+def _link(request, link):
+    return {
+        "id": link.pk, "role": link.role, "uses": link.use_count,
+        "url": request.build_absolute_uri(reverse("editor:join", args=[link.token])),
+    }
+
+
+def _sharing(request, story):
+    return {
+        "links": [_link(request, l) for l in story.share_links.order_by("pk")],
+        "collabs": [
+            {"id": c.pk, "username": c.user.get_username(), "role": c.role}
+            for c in StoryCollaborator.objects.filter(story=story).select_related("user").order_by("pk")
+        ],
+    }
+
+
+def _home_url(story_id, read=False):
+    return f"{reverse('home:home')}?view=weave&story={story_id}" + ("&mode=read" if read else "")
+
+
+@login_required
+def join_view(request, token):
+    """Opening a share link: read links let you read, edit links make you a collaborator."""
+    link = get_object_or_404(StoryShareLink.objects.select_related("story"), token=token)
+    story = link.story
+    if story.is_deleted:
+        raise Http404("Story not found.")
+    user = request.user
+
+    if story.author_id == user.id:
+        return redirect(_home_url(story.pk))
+
+    if link.role == StoryShareLink.Role.EDITOR:
+        if is_guest(user):
+            messages.info(request, "This is an edit link. Create a free account, then open the link again.")
+            return redirect(f"{reverse('register:register')}?next={request.path}")
+        collab, created = StoryCollaborator.objects.get_or_create(
+            story=story, user=user, defaults={"role": StoryCollaborator.Role.EDITOR})
+        if not created and collab.role != StoryCollaborator.Role.EDITOR:
+            collab.role = StoryCollaborator.Role.EDITOR
+            collab.save(update_fields=["role"])
+        StoryShareLink.objects.filter(pk=link.pk).update(use_count=F("use_count") + 1)
+        messages.success(request, f"You can now edit \u201c{story.title}\u201d.")
+        return redirect(_home_url(story.pk))
+
+    # read link: remember it for this browser session, and give members a viewer seat
+    shared = set(request.session.get("shared_reads", []))
+    shared.add(story.pk)
+    request.session["shared_reads"] = list(shared)
+    if not is_guest(user):
+        StoryCollaborator.objects.get_or_create(
+            story=story, user=user, defaults={"role": StoryCollaborator.Role.VIEWER})
+    StoryShareLink.objects.filter(pk=link.pk).update(use_count=F("use_count") + 1)
+    return redirect(_home_url(story.pk, read=True))
+
+
 # ---------------------------------------------------------------- page
 
 @login_required
@@ -108,7 +173,8 @@ def weave_view(request, story_id):
         "embed": request.GET.get("embed") == "1",
         "weave": {**_graph(story), "canEdit": can_edit, "apiBase": api_base,
                   "me": request.user.get_username(), "prefs": {**prefs.weave_prefs(), **({"defaultMode": "read"} if request.GET.get("mode") == "read" else {})},
-                  "focus": focus, "isAuthor": story.author_id == request.user.id},
+                  "focus": focus, "isAuthor": story.author_id == request.user.id,
+                  "sharing": _sharing(request, story) if story.author_id == request.user.id else None},
     })
 
 
@@ -159,6 +225,8 @@ def api(methods):
                 return JsonResponse(data)
             except Http404:
                 return JsonResponse({"error": "Not found."}, status=404)
+            except PermissionDenied:
+                return JsonResponse({"error": "Only the author can do that."}, status=403)
             except ValidationError as exc:
                 return JsonResponse({"error": " ".join(exc.messages)}, status=400)
             except (ValueError, TypeError, KeyError) as exc:
@@ -355,3 +423,44 @@ def api_variable(request, story, body, variable_id):
     var = get_object_or_404(GlobalVariable, pk=variable_id, story=story)
     var.delete()
     return {"deleted": variable_id}
+
+
+# ---------------------------------------------------------------- sharing api (author only)
+
+def _author_only(request, story):
+    if story.author_id != request.user.id:
+        raise PermissionDenied
+
+
+@api(["POST"])
+def api_share(request, story, body):
+    _author_only(request, story)
+    role = body.get("role")
+    if role not in StoryShareLink.Role.values:
+        raise ValueError("Choose a read link or an edit link.")
+    if story.share_links.count() >= MAX_LINKS:
+        raise ValueError(f"You can have at most {MAX_LINKS} links. Delete one first.")
+    link = StoryShareLink.objects.create(
+        story=story, role=role, token=StoryShareLink.new_token(), created_by=request.user)
+    return {"link": _link(request, link)}
+
+
+@api(["DELETE"])
+def api_share_link(request, story, body, link_id):
+    _author_only(request, story)
+    get_object_or_404(StoryShareLink, pk=link_id, story=story).delete()
+    return {"deleted": link_id}
+
+
+@api(["PATCH", "DELETE"])
+def api_collaborator(request, story, body, collab_id):
+    _author_only(request, story)
+    collab = get_object_or_404(StoryCollaborator, pk=collab_id, story=story)
+    if request.method == "DELETE":
+        collab.delete()
+        return {"deleted": collab_id}
+    if body.get("role") not in StoryCollaborator.Role.values:
+        raise ValueError("Role must be editor or viewer.")
+    collab.role = body["role"]
+    collab.save(update_fields=["role"])
+    return {"id": collab.pk, "role": collab.role}
